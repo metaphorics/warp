@@ -164,7 +164,10 @@ impl CacheSetupPlan {
 
         for configuration in &self.configurations {
             if configuration.modes.is_empty()
-                || !is_sorted_deduplicated(&configuration.modes)
+                || !configuration
+                    .modes
+                    .windows(2)
+                    .all(|window| window[0] < window[1])
                 || !is_safe_relative_cache_dir(&configuration.relative_cache_dir)
             {
                 return Err(PlanInvariantError);
@@ -175,10 +178,6 @@ impl CacheSetupPlan {
         }
         Ok(())
     }
-}
-
-fn is_sorted_deduplicated(values: &[String]) -> bool {
-    values.windows(2).all(|window| window[0] < window[1])
 }
 
 fn is_safe_relative_cache_dir(path: &Path) -> bool {
